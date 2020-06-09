@@ -49,7 +49,7 @@ func getBook(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-	_ = json.NewEncoder(writer).Encode(&Book{})
+	//_ = json.NewEncoder(writer).Encode(&Book{})
 }
 
 func createBooks(writer http.ResponseWriter, request *http.Request) {
