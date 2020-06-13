@@ -83,5 +83,26 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(rw, "Product not found", http.StatusNotFound)
 	}
+}
 
+func (p *Products) DeleteProduct(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(rw, "Unble to convert id", http.StatusBadRequest)
+		return
+	}
+
+	p.l.Println("Handle PUT Product", id)
+
+	prod := &data.Product{}
+	err = data.DeleteProducts(id, prod)
+	if err == data.ErrProductNotFound {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+	}
 }

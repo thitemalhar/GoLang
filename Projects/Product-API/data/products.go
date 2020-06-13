@@ -3,22 +3,52 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator"
 	"io"
+	"regexp"
 	"time"
 )
 
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-	SKU         string  `json:"sku"`
+	Name        string  `json:"name" validate:"required"`
+	Description string  `json:"description" validate:"required,description"`
+	Price       float32 `json:"price" validate:"gt=0"`
+	SKU         string  `json:"sku" validate:"required,sku"`
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
 	DeletedOn   string  `json:"-"`
 }
 
 type Products []*Product
+
+func (p *Product) Validate() error {
+	validate := validator.New()
+	validate.RegisterValidation("sku", validateSKU)
+	validate.RegisterValidation("description", ValidateDescription)
+	return validate.Struct(p)
+
+}
+
+func validateSKU(fl validator.FieldLevel) bool  {
+	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
+	match := re.FindAllString(fl.Field().String(), -1)
+	fmt.Println(match)
+	fmt.Println(len(match))
+	if len(match) != 1 {
+		return false
+	}
+	return true
+}
+
+func ValidateDescription(fl validator.FieldLevel) bool  {
+	re := regexp.MustCompile(`[a-z]+\s[a-z]+\s[a-z]+\s[a-z]+\s[a-z]+`)
+	match := re.FindAllString(fl.Field().String(), -1)
+	if len(match) != 1 {
+		return false
+	}
+	return true
+}
 
 func (p *Products) ToJson(w io.Writer) error {
 	e := json.NewEncoder(w)
@@ -56,6 +86,16 @@ func FindProduct(id int) (*Product, int, error) {
 		}
 	}
 	return nil, -1, ErrProductNotFound
+}
+
+func DeleteProducts(id int, p *Product) error{
+	_, pos, err := FindProduct(id)
+	if err != nil {
+		return err
+	}
+	p.ID = id
+	productList = append(productList[:pos], productList[pos+1:]...)
+	return nil
 }
 
 var ErrProductNotFound = fmt.Errorf("Product not found")
