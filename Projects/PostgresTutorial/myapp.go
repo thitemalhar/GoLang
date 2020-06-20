@@ -78,12 +78,3 @@ func main()  {
 		fmt.Printf("%s %s\n", fname, lname)
 	}
 }
-
-
-
-
-
-
-//func checkErr(err error) error  {
-//	return err
-//}
